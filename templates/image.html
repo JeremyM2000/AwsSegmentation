@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <title>Image Selector</title>
+    </head>
+    <body>
+        <h1>Sélection d'une image</h1>
+
+        <form action="{{ url_for('segment') }}" method="POST" enctype="multipart/form-data">
+            <input name="img" type="file"/>
+            <br><br>
+            <input type="submit" value="Ségmenter"/>
+        </form>
+
+        {% if original_image %}
+            <h1>Image originelle </h1>
+            <img src="{{original_image}}">
+            {% if segmented_image %}
+                <h1>Image ségmentée </h1>
+                <img src="{{segmented_image}}">
+            {% else %}
+                <h1>Erreur lors de la ségmentation</h1>
+            {% endif %}
+        {% else %}
+            <h1>Veuillez choisir une image puis cliquez sur "Ségmenter"</h1>
+        {% endif %}
+    </body>
+</html>

@@ -1,0 +1,34 @@
+default:
+  interruptible: true
+
+variables:
+  REPO_URL: $AWS_REGISTRY_URL
+
+stages:
+  - docker
+
+docker-build️:
+  stage: docker
+  tags:
+    - STRUN01PLV
+  image:
+    name: gcr.io/kaniko-project/executor:v1.9.0-debug
+    entrypoint: [""]
+  variables:
+    TAGGED_IMAGE: "$CI_PROJECT_NAME:dev"
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "develop"'
+      variables:
+        TAGGED_IMAGE: "$CI_PROJECT_NAME:rec"
+    - if: '$CI_COMMIT_REF_NAME == "main"'
+      variables:
+        TAGGED_IMAGE: "$CI_PROJECT_NAME:prod"
+    - when: always
+  script:
+    - /busybox/mkdir -p /root/.aws
+    - /busybox/echo $AWS_CREDENTIALS | base64 -d > /root/.aws/credentials
+    - /busybox/echo "{\"credHelpers\":{\"$REPO_URL\":\"ecr-login\"}}" > /kaniko/.docker/config.json
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination $REPO_URL/$TAGGED_IMAGE
